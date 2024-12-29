@@ -16,7 +16,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 # Initial Gathering
 rootFolder = os.path.abspath(".")
-outputFile = f"{rootFolder}/outputs/[{datetime.now().strftime('%d%m%Y%-H%M%S')}]Consolidated Time Data.xlsx"
+outputFile = f"{rootFolder}/outputs/[{datetime.now().strftime('%d%m%Y%_H%M%S')}]Consolidated Time Data.xlsx"
 templateFile = f"{rootFolder}/Templates/Template.xlsx"
 
 thinBorder = Border(
