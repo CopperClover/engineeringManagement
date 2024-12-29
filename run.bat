@@ -3,7 +3,7 @@
 REM Get the directory of the script
 set "SCRIPT_DIR=%~dp0"                 REM Directory of the batch file
 set "REPO_DIR=%SCRIPT_DIR%"            REM Repository directory (same as script directory)
-set "APP_SCRIPT=app.py"                REM Replace with the name of your Python application
+set "APP_SCRIPT=main.py"               REM Replace with the name of your Python application
 set "VENV_DIR=%REPO_DIR%venv"          REM Virtual environment folder inside the repo
 
 REM Step 1: Navigate to the repository
