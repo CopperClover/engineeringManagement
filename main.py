@@ -10,13 +10,14 @@ from tkinter import ttk, filedialog, messagebox
 from openpyxl import load_workbook
 from datetime import datetime
 from openpyxl.styles.borders import Border, Side
+from openpyxl.chart import BarChart, Reference
 from openpyxl.worksheet.worksheet import Worksheet
 
 
 # Initial Gathering
 rootFolder = os.path.abspath(".")
 outputFile = f"{rootFolder}/outputs/[{datetime.now().strftime('%d%m%Y%-H%M%S')}]Consolidated Time Data.xlsx"
-templateFile = f"{rootFolder}/Files/Template.xlsx"
+templateFile = f"{rootFolder}/Templates/Template.xlsx"
 
 thinBorder = Border(
     left=Side(style='thin'), 
@@ -56,7 +57,9 @@ def useTemplate(templateWS: Worksheet, additionalInfo: list, inputData: pd.DataF
         [3, 4],
         [6, 4],
         [7, 4],
-        [8, 4]
+        [8, 4],
+        [2, 8],
+        [4, 8]
     ]
 
     for index, info in enumerate(additionalInfo):
@@ -109,7 +112,7 @@ def useTemplate(templateWS: Worksheet, additionalInfo: list, inputData: pd.DataF
 
             currentRow += 1
     
-    print(currentRow)
+    # print(currentRow)
 
     templateWS.delete_rows(currentRow)
 
@@ -120,7 +123,7 @@ def useTemplate(templateWS: Worksheet, additionalInfo: list, inputData: pd.DataF
     lostHoursSum = templateWS.cell(row=currentRow, column=9).value
     lostCubesSum = templateWS.cell(row=currentRow, column=10).value
 
-    print(dtSum)
+    # print(dtSum)
     # print(dtCheck)
 
     templateWS.cell(row=currentRow, column=5, value=dtSum.replace("13)", f"{currentRow-1})"))
@@ -233,14 +236,14 @@ def onSubmit():
     inputFile = filePathEntry.get()
     additionalInfo = [entry.get() for entry in additionalInfoEntries]
     dropdownValue = dropdownVar.get()
-    useExisting = existingFileVar.get()
-    existingFile = existingFileEntry.get()
+    # useExisting = existingFileVar.get()
+    # existingFile = existingFileEntry.get()
 
     if not inputFile:
         messagebox.showerror("Error", "Please select an Excel file.")
         return
     
-    if any(not info for info in additionalInfo) and not useExisting:
+    if any(not info for info in additionalInfo): # and not useExisting <- Add to check when configured
         messagebox.showerror("Error", "Please fill out all additional information fields.")
         return
     
@@ -248,13 +251,14 @@ def onSubmit():
         messagebox.showerror("Error", "Please select a value from the dropdown menu.")
         return
 
-    if useExisting and not existingFile:
-        messagebox.showerror("Error", "Please select an existing file.")
-        return
+    # if useExisting and not existingFile:
+    #     messagebox.showerror("Error", "Please select an existing file.")
+    #     return
 
     # Show busy state
     submitButton.config(state=tk.DISABLED, text="Processing...")
     # Process the file in a separate thread to avoid freezing the GUI
+    existingFile = "" # <- Remove when implemented
     thread = threading.Thread(target=processFile, args=(inputFile, additionalInfo, outputFileLabel, completeButton, dropdownValue, existingFile))
     thread.start()
 
@@ -263,24 +267,24 @@ def browseFile():
     filePath = filedialog.askopenfilename(filetypes=[("Excel files", "*.xls *.xlsx")])
     if filePath:
         filePathEntry.delete(0, tk.END)
-        filePathEntry.insert(0, filePath.split("/")[-1])
+        filePathEntry.insert(0, filePath)
 
 # Browse for an existing file
-def browseExistingFile():
-    filePath = filedialog.askopenfilename(filetypes=[("Excel files", "*.xls *.xlsx")])
-    if filePath:
-        existingFileEntry.delete(0, tk.END)
-        existingFileEntry.insert(0, filePath)
+# def browseExistingFile():
+#     filePath = filedialog.askopenfilename(filetypes=[("Excel files", "*.xls *.xlsx")])
+#     if filePath:
+#         existingFileEntry.delete(0, tk.END)
+#         existingFileEntry.insert(0, filePath)
 
-def toggleExistingFileInput():
-    if existingFileVar.get():
-        existingFileLabel.grid()
-        existingFileEntry.grid()
-        existingFileBrowseButton.grid()
-    else:
-        existingFileLabel.grid_remove()
-        existingFileEntry.grid_remove()
-        existingFileBrowseButton.grid_remove()
+# def toggleExistingFileInput():
+#     if existingFileVar.get():
+#         existingFileLabel.grid()
+#         existingFileEntry.grid()
+#         existingFileBrowseButton.grid()
+#     else:
+#         existingFileLabel.grid_remove()
+#         existingFileEntry.grid_remove()
+#         existingFileBrowseButton.grid_remove()
 
 def closeApp():
     root.destroy()
@@ -289,23 +293,23 @@ def closeApp():
 root = tk.Tk()
 root.title("ADT Time Tracker and Production Calculator")
 
-# Checkbox for using an existing file
-existingFileVar = tk.BooleanVar()
-useExistingCheckbox = tk.Checkbutton(root, text="Use Existing File", variable=existingFileVar, command=toggleExistingFileInput)
-useExistingCheckbox.grid(row=2, column=3, columnspan=3, pady=10)
+# # Checkbox for using an existing file
+# existingFileVar = tk.BooleanVar()
+# useExistingCheckbox = tk.Checkbutton(root, text="Use Existing File", variable=existingFileVar, command=toggleExistingFileInput)
+# useExistingCheckbox.grid(row=2, column=3, columnspan=3, pady=10)
 
-# Existing file input (initially hidden)
-existingFileLabel = tk.Label(root, text="Select Existing File:")
-existingFileLabel.grid(row=3, column=3, padx=10, pady=10, sticky="e")
-existingFileLabel.grid_remove()
+# # Existing file input (initially hidden)
+# existingFileLabel = tk.Label(root, text="Select Existing File:")
+# existingFileLabel.grid(row=3, column=3, padx=10, pady=10, sticky="e")
+# existingFileLabel.grid_remove()
 
-existingFileEntry = tk.Entry(root, width=40)
-existingFileEntry.grid(row=3, column=4, padx=10, pady=10)
-existingFileEntry.grid_remove()
+# existingFileEntry = tk.Entry(root, width=40)
+# existingFileEntry.grid(row=3, column=4, padx=10, pady=10)
+# existingFileEntry.grid_remove()
 
-existingFileBrowseButton = tk.Button(root, text="Browse", command=browseExistingFile)
-existingFileBrowseButton.grid(row=3, column=5, padx=10, pady=10)
-existingFileBrowseButton.grid_remove()
+# existingFileBrowseButton = tk.Button(root, text="Browse", command=browseExistingFile)
+# existingFileBrowseButton.grid(row=3, column=5, padx=10, pady=10)
+# existingFileBrowseButton.grid_remove()
 
 # File selection
 filePathLabel = tk.Label(root, text="Select Excel File:")
@@ -323,9 +327,11 @@ additionalInfoLabels = [
     "Rate per ADT Team:", 
     "Shifts to Date:",
     "Days to Date:",
-    "Production Hours per Day"
+    "Production Hours per Day:",
+    "Budget Days:",
+    "Budget Volume:"
 ]
-for i in range(5):
+for i in range(7):
     label = tk.Label(root, text=additionalInfoLabels[i])
     label.grid(row=i + 1, column=0, padx=10, pady=10, sticky="e")
 
@@ -345,19 +351,19 @@ dropdownMenu.current(0)  # Set the default value to the first option
 
 # Submit button
 submitButton = tk.Button(root, text="Submit", command=onSubmit)
-submitButton.grid(row=6, column=1, pady=10)
+submitButton.grid(row=8, column=1, pady=10)
 
 # Close button
 closeButton = tk.Button(root, text="Close", command=closeApp)
-closeButton.grid(row=6, column=2, pady=10)
+closeButton.grid(row=8, column=2, pady=10)
 
 # Output status
 outputFileLabel = tk.Label(root, text="")
-outputFileLabel.grid(row=7, column=0, columnspan=3, pady=10)
+outputFileLabel.grid(row=9, column=0, columnspan=3, pady=10)
 
 # Open completed file button (initially hidden)
 completeButton = tk.Button(root, text="Open File", state=tk.NORMAL)
-completeButton.grid(row=8, column=1, pady=10)
+completeButton.grid(row=10, column=1, pady=10)
 completeButton.grid_remove()
 
 # Run the GUI
